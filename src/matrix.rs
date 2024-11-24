@@ -56,6 +56,18 @@ impl Matrix {
         }
     }
 
+    pub fn from_vec_i32(v: Vec<Vec<i32>>) -> Self {
+        Self {
+            rows: v.len(),
+            cols: v[0].len(),
+            matrix: v
+                .into_iter()
+                .map(|x| x.iter().map(|y| *y as f32).collect::<Vec<f32>>())
+                .flatten()
+                .collect(),
+        }
+    }
+
     pub fn num_rows(&self) -> usize {
         return self.rows;
     }
@@ -134,6 +146,29 @@ impl Matrix {
         return Some(result);
     }
 
+    pub fn matrix_multiply(&self, m: &Matrix) -> Option<Matrix> {
+        if self.cols != m.num_rows() {
+            return None;
+        }
+        let mut result = Matrix::new(self.rows, m.num_cols());
+
+        let mut i = 0;
+        while i < result.num_rows() {
+            let mut j = 0;
+            while j < result.num_cols() {
+                let mut k = 0;
+                while k < m.num_rows() {
+                    let val = result.at(i, j) + self.at(i, k) * m.at(k, j);
+                    result.set(i, j, val);
+                    k += 1;
+                }
+                j += 1;
+            }
+            i += 1;
+        }
+        return Some(result);
+    }
+
     pub fn matrix_multiply2(&self, m: &Matrix) -> Option<Matrix> {
         if self.cols != m.num_rows() {
             return None;
@@ -171,34 +206,18 @@ impl Matrix {
         return Some(result);
     }
 
-    pub fn matrix_multiply(&self, m: &Matrix) -> Option<Matrix> {
-        if self.cols != m.num_rows() {
-            return None;
-        }
-        let mut result = Matrix::new(self.rows, m.num_cols());
-
-        let mut i = 0;
-        while i < result.num_rows() {
-            let mut j = 0;
-            while j < result.num_cols() {
-                let mut k = 0;
-                while k < m.num_rows() {
-                    let val = result.at(i, j) + self.matrix[i * self.cols + k] * m.at(k, j);
-                    result.set(i, j, val);
-                    k += 1;
-                }
-                j += 1;
-            }
-            i += 1;
-        }
-        return Some(result);
-    }
-
     pub fn get_coords(index: usize, rows: usize, cols: usize) -> Option<(usize, usize)> {
         if rows == 0 {
             return None;
         }
         return Some((index / cols, index % cols));
+    }
+
+    pub fn print_matrix(m: Option<Matrix>) {
+        match m {
+            Some(mat) => println!("{}", mat.to_string()),
+            None => println!("{}", String::from("Invalid operation")),
+        }
     }
 
     fn dot_product(row: &[f32], col: &[f32]) -> f32 {
